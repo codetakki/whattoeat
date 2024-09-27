@@ -8,24 +8,25 @@
         :style="{scale: mobile ? 1 : 1.5}"
         label="Adress" />
     </div>
-    <div class="text-h2 font-weight-bold">What do you think about:</div>
-    <v-card v-if="restaurant" :style="{scale: mobile ? 1 : 1.5}" 
-      max-width="400"
-      class="text-left my-12">
-      <v-card-title class="d-flex align-center text-h4">{{ restaurant.name }} <v-spacer></v-spacer> <v-btn icon="mdi-open-in-new" target="_blank" :href="googleSearchQuary"  variant="flat"></v-btn></v-card-title>
-      <v-card-text class="text-h5">
-        <div v-if="restaurant.amenity_type">{{ amenityMap[restaurant.amenity_type] }}</div>
-        <span v-if="restaurant.cuisine">{{getCuisine(restaurant.cuisine || '') }}</span>
-        <!-- <pre>{{ restaurant }}</pre> -->
-      </v-card-text>
-    </v-card>
-    <v-btn size="x-large"
-    @click="appStore.getRandomRestaurant">I dont like it</v-btn>
-    <div class="text-body-1 text-medium-emphasis">
-      Giving suggestions in a {{ appStore.radiusKm  }} km radius <br>
-      {{ appStore.restaurants.length }} restaurants found
-
-    </div>
+    <template v-if="restaurant">
+      <div class="text-h2 font-weight-bold">What do you think about:</div>
+      <v-card v-if="restaurant" :style="{scale: mobile ? 1 : 1.5}"
+        max-width="400"
+        class="text-left my-12">
+        <v-card-title class="d-flex align-center text-h4">{{ restaurant.name }} <v-spacer></v-spacer> <v-btn icon="mdi-open-in-new" target="_blank" :href="googleSearchQuary"  variant="flat"></v-btn></v-card-title>
+        <v-card-text class="text-h5">
+          <div v-if="restaurant.amenity_type">{{ amenityMap[restaurant.amenity_type] }}</div>
+          <span v-if="restaurant.cuisine">{{getCuisine(restaurant.cuisine || '') }}</span>
+          <!-- <pre>{{ restaurant }}</pre> -->
+        </v-card-text>
+      </v-card>
+      <v-btn size="x-large"
+      @click="appStore.getRandomRestaurant">I dont like it</v-btn>
+      <div class="text-body-1 text-medium-emphasis">
+        Giving suggestions in a {{ appStore.radiusKm  }} km radius <br>
+        {{ appStore.restaurants.length }} restaurants found
+      </div>
+    </template>
   </div>
 </template>
 
