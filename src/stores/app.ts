@@ -77,7 +77,7 @@ export const useAppStore = defineStore('app', {
           out skel qt;
           `
     })
-    const overpassUrl = 'http://overpass-api.de/api/interpreter'
+    const overpassUrl = 'https://overpass-api.de/api/interpreter'
     watch(overpassQuery, () => {
       if (!overpassQuery.value) return
       fetchRestaurants()
