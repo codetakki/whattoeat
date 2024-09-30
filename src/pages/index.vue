@@ -192,7 +192,6 @@
       .join(', ')
     return cuisines
   }
-  const filterExpanded = ref(false)
 
   const restaurantLocationUrl = computed(() => {
     if (restaurant.value) { return `https://nominatim.openstreetmap.org/reverse?format=json&lat=${restaurant.value?.latitude}&lon=${restaurant.value?.longitude}` }
