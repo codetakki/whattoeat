@@ -46,6 +46,7 @@ export const useAppStore = defineStore('app', {
         if (!ctx.data.address.road && ctx.data.value.address.house_number) {
           typedAdress.value = `${ctx.data.display_name}`
         }
+        if (typedAdress.value && typedAdress.value.length > 0) executeAdressToCoords()
         return ctx
       }
     }).json<any>()
@@ -65,7 +66,7 @@ export const useAppStore = defineStore('app', {
     const typedAdress = ref()
     const adressDebounced = refDebounced(typedAdress, 1000)
     const addressRequestUrl = computed(() => `https://nominatim.openstreetmap.org/search?q=${adressDebounced.value}&format=json&limit=1`)
-    const { data: adressCoordinatesData, isFetching: fetchingAdressCoordinates } = useFetch(addressRequestUrl, {
+    const { data: adressCoordinatesData, isFetching: fetchingAdressCoordinates, execute: executeAdressToCoords } = useFetch(addressRequestUrl, {
       immediate: false, refetch: true,
       beforeFetch({ cancel }) {
         if (!typedAdress.value || typedAdress.value.length < 1) cancel()
