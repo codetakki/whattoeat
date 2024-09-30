@@ -498,7 +498,7 @@ export const cuisineMap = {
   },
   "kebab": {
     "name": "Kebab",
-    "emoji": "🍗"
+    "emoji": "🥙"
   },
   "meat": {
     "name": "Meat",
