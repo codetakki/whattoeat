@@ -1,10 +1,13 @@
 <template>
   <div class="align-center d-flex flex-column justify-center h-100 w-100 text-center px-2 py-4 overflow-x-hidden">
     <v-expand-transition group>
-      <div key="search-title" class="d-flex flex-column align-center">
+      <div key="search-title"
+        class="d-flex flex-column align-center">
         <div class="text-h2 font-weight-bold">Enter your adress</div>
         <v-chip v-if="appStore.fetchingCoordinatesAdress">Getting address
-          <template #prepend><v-progress-circular indeterminate size="20" class="ml-n1 mr-1"></v-progress-circular></template>
+          <template #prepend><v-progress-circular indeterminate
+              size="20"
+              class="ml-n1 mr-1"></v-progress-circular></template>
         </v-chip>
         <div class="my-4  my-md-8  ">
           <v-text-field v-model="appStore.typedAdress"
@@ -16,7 +19,8 @@
         </div>
       </div>
       <div v-if="appStore.fetchingRestaurants || appStore.fetchingAdressCoordinates"
-        width="300" key="progress">
+        width="300"
+        key="progress">
         <v-progress-circular indeterminate
           :size="128"
           :width="15"
@@ -26,11 +30,13 @@
         </v-progress-circular>
 
       </div>
-      <div v-else-if="restaurant" key="result"
+      <div v-else-if="restaurant"
+        key="result"
         class="d-flex flex-column align-center w-100">
         <div class="text-md-h3 text-h4 font-weight-bold">What do you think about:</div>
         <v-card v-if="restaurant"
-          :width="mobile ? '90%' : 600" min-height="140"
+          :width="mobile ? '90%' : 600"
+          min-height="140"
           :style="{ scale: mobile ? 1 : 1 }"
           class="text-left my-4 mx-2">
           <v-card-title class="text-h5 text-md-h3 text-bold d-flex align-center">
@@ -55,10 +61,14 @@
           </v-card-text>
         </v-card>
         <v-btn size="x-large"
-          @click="appStore.getRandomRestaurant">I dont like it</v-btn>
+          v-if="appStore.availableRestaurants.length !== 0"
+          @click="appStore.getRandomRestaurant">I don't like it</v-btn>
+        <v-btn size="x-large" v-else
+          @click="appStore.suggestedRestaurants = []">Reset suggestions</v-btn>
         <div class="text-body-1 text-medium-emphasis">
           Giving suggestions in a {{ appStore.radiusKm }} km radius <br>
           {{ appStore.restaurants.length }} restaurants found
+          {{ appStore.availableRestaurants.length }} suggestions left
         </div>
       </div>
     </v-expand-transition>
@@ -71,7 +81,6 @@
   import { cuisineMap, amenityMap } from '@/assets/cuisine-map';
   import { useDisplay } from 'vuetify';
   import { useFetch } from '@vueuse/core';
-  import emojiFromWord from "emoji-from-word";
 
   const { mobile } = useDisplay()
   const appStore = useAppStore()

@@ -139,13 +139,18 @@ export const useAppStore = defineStore('app', {
       return amenities
     })
 
-    const randMax = computed(() => {
-      return restaurants.value.length || 0
-    })
-
+    
     const randomRestaurant = ref<AmenityInfo>()
+    const suggestedRestaurants = ref<number[]>([])
+    const availableRestaurants = computed(() => {
+      return restaurants.value.filter(restaurant => !suggestedRestaurants.value.includes(restaurant.id))
+    })
+    const randMax = computed(() => {
+      return availableRestaurants.value.length || 0
+    })
     const getRandomRestaurant = () => {
-      randomRestaurant.value = restaurants.value[Math.floor(Math.random() * randMax.value)]
+      randomRestaurant.value = availableRestaurants.value[Math.floor(Math.random() * randMax.value)]
+      suggestedRestaurants.value.push(randomRestaurant.value.id)
       return randomRestaurant
     }
 
@@ -166,6 +171,8 @@ export const useAppStore = defineStore('app', {
       fetchingCoordinatesAdress,
       fetchingAdressCoordinates,
       fetchingRestaurants,
+      availableRestaurants,
+      suggestedRestaurants
     }
   },
 },
