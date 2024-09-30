@@ -8,10 +8,10 @@ export const useAppStore = defineStore('app', {
   state: () => {
     const { coords, error, isSupported, pause } = useGeolocation({})
     const locationToAdressUrl = computed(() => `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.value.latitude}&lon=${coords.value.longitude}`)
-    const { execute, data: coordinatesAdress } = useFetch(locationToAdressUrl, {}, {
+    const { execute, data: coordinatesAdress, isFetching: fetchingCoordinatesAdress } = useFetch(locationToAdressUrl, {}, {
       immediate: false, refetch: false, afterFetch: (ctx) => {
         console.log(ctx.data);
-
+        if(typedAdress.value && typedAdress.value.length > 0) return ctx
         if (!ctx.data?.address) return ctx
         if (ctx.data.name && ctx.data.name.length > 0) {
           typedAdress.value = `${ctx.data.name}`
@@ -22,11 +22,11 @@ export const useAppStore = defineStore('app', {
         }
         if (ctx.data.address.house_number) {
           typedAdress.value += ` ${ctx.data.address.house_number}`
-        }       
+        }
         if (ctx.data.address.city) {
           typedAdress.value += ` ${ctx.data.address.city}`
         }
-        else if( ctx.data.address.municipality) {
+        else if (ctx.data.address.municipality) {
           typedAdress.value += ` ${ctx.data.address.municipality}`
         }
         if (!ctx.data.address.road && ctx.data.value.address.house_number) {
@@ -51,7 +51,10 @@ export const useAppStore = defineStore('app', {
     const typedAdress = ref()
     const adressDebounced = refDebounced(typedAdress, 1000)
     const addressRequestUrl = computed(() => `https://nominatim.openstreetmap.org/search?q=${adressDebounced.value}&format=json&limit=1`)
-    const { data: adressCoordinatesData } = useFetch(addressRequestUrl, { immediate: false, refetch: true }).json<any[]>()
+    const { data: adressCoordinatesData, isFetching: fetchingAdressCoordinates } = useFetch(addressRequestUrl, { immediate: false, refetch: true,
+      beforeFetch({cancel}) {
+        if (!typedAdress.value || typedAdress.value.length < 1) cancel()
+      } }).json<any[]>()
     const adressCoordinates = computed(() => {
       if (adressCoordinatesData && adressCoordinatesData.value && adressCoordinatesData.value[0]) {
         return { latitude: adressCoordinatesData.value[0].lat, longitude: adressCoordinatesData.value[0].lon }
@@ -85,10 +88,10 @@ export const useAppStore = defineStore('app', {
     })
     const overpassUrl = 'https://overpass-api.de/api/interpreter'
     watch(overpassQuery, () => {
-      if (!overpassQuery.value) return
+      if (!overpassQuery.value || overpassQuery.value.length < 1)  return
       fetchRestaurants()
     })
-    const { data: restaurantData, execute: fetchRestaurants } = useFetch(overpassUrl,
+    const { data: restaurantData, execute: fetchRestaurants, isFetching: fetchingRestaurants } = useFetch(overpassUrl,
       {
         body: overpassQuery.value,
         method: 'POST',
@@ -159,7 +162,10 @@ export const useAppStore = defineStore('app', {
       randomRestaurant,
       typedAdress,
       radiusKm,
-      coordinatesAdress
+      coordinatesAdress,
+      fetchingCoordinatesAdress,
+      fetchingAdressCoordinates,
+      fetchingRestaurants,
     }
   },
 },
