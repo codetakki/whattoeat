@@ -33,7 +33,7 @@
       <div v-else-if="restaurant"
         key="result"
         class="d-flex flex-column align-center w-100">
-        <div class="text-md-h3 text-h4 font-weight-bold">What do you think about:</div>
+        <div class="text-md-h3 text-h4 font-weight-bold">You could eat at:</div>
         <v-card v-if="restaurant"
           :width="mobile ? '90%' : 600"
           :style="{ scale: mobile ? 1 : 1 }"
