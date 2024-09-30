@@ -5,28 +5,27 @@ import { refDebounced } from '@vueuse/core'
 
 export const useFetch = createFetch({
   options: {
-    async beforeFetch({options}) {
-      if (!options.headers) options.headers = {}
+    async beforeFetch({ options }) {
       options.headers = {
-        'Referer': 'https://wheretoeat.takki.org',
+        ...options.headers,
+        Referer: 'wheretoeat.takki.org'
       }
-      return {options}
+      console.log(options.headers);
+      return { options }
     },
-    
-  },
-  fetchOptions: {
-    mode: 'cors',
-  },
+
+  }
 })
 
 export const useAppStore = defineStore('app', {
   state: () => {
+
     const { coords, error, isSupported, pause } = useGeolocation({})
     const locationToAdressUrl = computed(() => `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.value.latitude}&lon=${coords.value.longitude}`)
     const { execute, data: coordinatesAdress, isFetching: fetchingCoordinatesAdress } = useFetch(locationToAdressUrl, {}, {
       immediate: false, refetch: false, afterFetch: (ctx) => {
         console.log(ctx.data);
-        if(typedAdress.value && typedAdress.value.length > 0) return ctx
+        if (typedAdress.value && typedAdress.value.length > 0) return ctx
         if (!ctx.data?.address) return ctx
         if (ctx.data.name && ctx.data.name.length > 0) {
           typedAdress.value = `${ctx.data.name}`
@@ -66,10 +65,12 @@ export const useAppStore = defineStore('app', {
     const typedAdress = ref()
     const adressDebounced = refDebounced(typedAdress, 1000)
     const addressRequestUrl = computed(() => `https://nominatim.openstreetmap.org/search?q=${adressDebounced.value}&format=json&limit=1`)
-    const { data: adressCoordinatesData, isFetching: fetchingAdressCoordinates } = useFetch(addressRequestUrl, { immediate: false, refetch: true,
-      beforeFetch({cancel}) {
+    const { data: adressCoordinatesData, isFetching: fetchingAdressCoordinates } = useFetch(addressRequestUrl, {
+      immediate: false, refetch: true,
+      beforeFetch({ cancel }) {
         if (!typedAdress.value || typedAdress.value.length < 1) cancel()
-      } }).json<any[]>()
+      }
+    }).json<any[]>()
     const adressCoordinates = computed(() => {
       if (adressCoordinatesData && adressCoordinatesData.value && adressCoordinatesData.value[0]) {
         return { latitude: adressCoordinatesData.value[0].lat, longitude: adressCoordinatesData.value[0].lon }
@@ -103,7 +104,7 @@ export const useAppStore = defineStore('app', {
     })
     const overpassUrl = 'https://overpass-api.de/api/interpreter'
     watch(overpassQuery, () => {
-      if (!overpassQuery.value || overpassQuery.value.length < 1)  return
+      if (!overpassQuery.value || overpassQuery.value.length < 1) return
       fetchRestaurants()
     })
     const { data: restaurantData, execute: fetchRestaurants, isFetching: fetchingRestaurants } = useFetch(overpassUrl,
@@ -125,6 +126,8 @@ export const useAppStore = defineStore('app', {
         },
       }).json<{ elements: [] }>()
 
+
+    const cuisineFilter = ref<string[]>([])
     const restaurants = computed(() => {
       if (!restaurantData.value) {
         return []
@@ -134,6 +137,11 @@ export const useAppStore = defineStore('app', {
       // Extract relevant information about each amenity
       restaurantData.value.elements.forEach((element: any) => {
         if (element.tags && element.tags.name) {
+          if (cuisineFilter.value.length > 0 && element.tags.cuisine) {
+            const cuisineTags = element.tags.cuisine.split(';').map((tag: string) => tag.trim())
+            const hasAnyCuisine = cuisineTags.some((tag: string) => cuisineFilter.value.includes(tag))
+            if (!hasAnyCuisine) return
+          }
           const amenityInfo: AmenityInfo = {
             ...element,
             id: element.id,
@@ -154,7 +162,7 @@ export const useAppStore = defineStore('app', {
       return amenities
     })
 
-    
+
     const randomRestaurant = ref<AmenityInfo>()
     const suggestedRestaurants = ref<number[]>([])
     const availableRestaurants = computed(() => {
@@ -187,7 +195,8 @@ export const useAppStore = defineStore('app', {
       fetchingAdressCoordinates,
       fetchingRestaurants,
       availableRestaurants,
-      suggestedRestaurants
+      suggestedRestaurants,
+      cuisineFilter
     }
   },
 },

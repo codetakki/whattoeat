@@ -9,7 +9,7 @@
               size="20"
               class="ml-n1 mr-1"></v-progress-circular></template>
         </v-chip>
-        <div class="my-4  my-md-8  ">
+        <div class="mt-4 mt-md-8 text-center">
           <v-text-field v-model="appStore.typedAdress"
             width="300"
             variant="outlined"
@@ -17,6 +17,28 @@
             :style="{ scale: mobile ? 1 : 1.4 }"
             label="Adress" />
         </div>
+        <v-expansion-panels :style="{ width: mobile ? '80%' : '600px' }">
+          <v-expansion-panel title="Picky eater?">
+            <v-expansion-panel-text style="max-width: 100%">
+              <v-autocomplete label="Cuisine"
+                v-model="appStore.cuisineFilter"
+                :items="cuisineList"
+                multiple
+                chips
+                closable-chips
+                item-title="text"
+                item-value="value"></v-autocomplete>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+        <!-- <div class="text-body-1 bg-surface border pa-2 px-4"
+          :class="filterContainerClass"
+          @click="filterExpanded = !filterExpanded"> Picky eater?
+          <div v-if="filterExpanded">
+            <v-autocomplete label="Cuisine"
+              :items="Object.keys(cuisineMap)"></v-autocomplete>
+          </div>
+        </div> -->
       </div>
       <div v-if="appStore.fetchingRestaurants || appStore.fetchingAdressCoordinates"
         width="300"
@@ -111,7 +133,11 @@
       .join(', ')
     return cuisines
   }
-
+  const filterExpanded = ref(false)
+  const filterContainerClass = computed(() => {
+    if (!filterExpanded) return 'rounded-pill'
+    return
+  })
   const restaurantLocationUrl = computed(() => {
     if (restaurant.value) { return `https://nominatim.openstreetmap.org/reverse?format=json&lat=${restaurant.value?.latitude}&lon=${restaurant.value?.longitude}` }
     else return ''
@@ -125,5 +151,14 @@
     if (!restaurantLocation.value || !restaurant.value?.longitude) return ''
     else { string += ` in ${restaurantLocation.value.address.road || restaurantLocation.value.address.house_number} ${restaurantLocation.value.address.city || restaurantLocation.value.address.municipality}` }
     return `https://www.google.com/search?q=${string.replace(' ', '+')}`
+  })
+
+  const cuisineList = computed(() => {
+    return Object.keys(cuisineMap).map((c) => {
+      return {
+        text: cuisineMap[c as CuisineType].name + ' ' + cuisineMap[c as CuisineType].emoji,
+        value: c
+      }
+    })
   })
 </script>
