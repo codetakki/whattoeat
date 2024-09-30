@@ -4,6 +4,8 @@ export { };
 declare global {
   // declares a 
   type CuisineType = keyof typeof  cuisineMap
+  type AmenityType = keyof typeof  amenityMap
+
 
   interface AmenityInfo {
     id: number;
@@ -15,6 +17,6 @@ declare global {
     email: string;
     website: string;
     cuisine: CuisineType;
-    amenity_type: keyof typeof amenityMap
+    amenity_type: AmenityType
   }
 }

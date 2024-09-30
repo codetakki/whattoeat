@@ -5,13 +5,13 @@ import { refDebounced } from '@vueuse/core'
 
 export const useFetch = createFetch({
   options: {
-    async beforeFetch({ options }) {
-      options.headers = {
-        ...options.headers,
+    async beforeFetch(ctx) {
+      ctx.options.headers = {
+        ...ctx.options.headers,
         Referer: 'wheretoeat.takki.org'
       }
-      console.log(options.headers);
-      return { options }
+      console.log(ctx.options.headers);
+      return ctx
     },
 
   }
@@ -128,6 +128,12 @@ export const useAppStore = defineStore('app', {
 
 
     const cuisineFilter = ref<string[]>([])
+    const amenityFilter = ref<string[]>([])
+    watch(() => {
+        return { 'a': cuisineFilter.value, b: amenityFilter.value }
+    }, () => {
+      suggestedRestaurants.value = []
+    })
     const restaurants = computed(() => {
       if (!restaurantData.value) {
         return []
@@ -137,9 +143,15 @@ export const useAppStore = defineStore('app', {
       // Extract relevant information about each amenity
       restaurantData.value.elements.forEach((element: any) => {
         if (element.tags && element.tags.name) {
-          if (cuisineFilter.value.length > 0 && element.tags.cuisine) {
-            const cuisineTags = element.tags.cuisine.split(';').map((tag: string) => tag.trim())
-            const hasAnyCuisine = cuisineTags.some((tag: string) => cuisineFilter.value.includes(tag))
+          if (amenityFilter.value.length > 0) {
+            if (!element.tags.amenity) return
+            const amenityTags = element.tags.amenity.split(';').map((tag: string) => tag.trim())
+            const hasAnyAmenity = amenityTags.some((tag: string) => amenityFilter.value.includes(tag))
+            if (!hasAnyAmenity) return
+          }
+          if (cuisineFilter.value.length > 0) {
+            if (!element.tags.cuisine) return
+            const hasAnyCuisine = cuisineFilter.value.some((tag: string) => element.tags.cuisine.includes(tag))
             if (!hasAnyCuisine) return
           }
           const amenityInfo: AmenityInfo = {
@@ -172,6 +184,8 @@ export const useAppStore = defineStore('app', {
       return availableRestaurants.value.length || 0
     })
     const getRandomRestaurant = () => {
+      console.log(randMax.value);
+      if (!randMax.value) return
       randomRestaurant.value = availableRestaurants.value[Math.floor(Math.random() * randMax.value)]
       suggestedRestaurants.value.push(randomRestaurant.value.id)
       return randomRestaurant
@@ -196,7 +210,8 @@ export const useAppStore = defineStore('app', {
       fetchingRestaurants,
       availableRestaurants,
       suggestedRestaurants,
-      cuisineFilter
+      cuisineFilter,
+      amenityFilter
     }
   },
 },

@@ -17,20 +17,7 @@
             :style="{ scale: mobile ? 1 : 1.4 }"
             label="Adress" />
         </div>
-        <v-expansion-panels :style="{ width: mobile ? '80%' : '600px' }">
-          <v-expansion-panel title="Picky eater?">
-            <v-expansion-panel-text style="max-width: 100%">
-              <v-autocomplete label="Cuisine"
-                v-model="appStore.cuisineFilter"
-                :items="cuisineList"
-                multiple
-                chips
-                closable-chips
-                item-title="text"
-                item-value="value"></v-autocomplete>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-        </v-expansion-panels>
+
         <!-- <div class="text-body-1 bg-surface border pa-2 px-4"
           :class="filterContainerClass"
           @click="filterExpanded = !filterExpanded"> Picky eater?
@@ -52,6 +39,10 @@
         </v-progress-circular>
 
       </div>
+      <div v-else-if="!appStore.restaurants.length && appStore.restaurantData">
+        <div>Could not find any restaurants matching your search 😢</div>
+      </div>
+
       <div v-else-if="restaurant"
         key="result"
         class="d-flex flex-column align-center w-100">
@@ -59,7 +50,7 @@
         <v-card v-if="restaurant"
           :width="mobile ? '90%' : 600"
           :style="{ scale: mobile ? 1 : 1 }"
-          class="text-left my-4 mx-2">
+          class="text-left my-4 mx-2 mb-8">
           <v-card-title>
             <div class="text-h5 text-md-h3 text-bold d-flex align-center">
 
@@ -90,15 +81,16 @@
             <!-- <pre>{{ restaurant }}</pre> -->
           </v-card-text>
         </v-card>
-        <v-btn size="x-large"
+        <v-btn size="x-large" class="mb-4"
           v-if="appStore.availableRestaurants.length !== 0"
           @click="appStore.getRandomRestaurant">I don't like it</v-btn>
-        <v-btn size="x-large"
-          v-else
-          @click="appStore.suggestedRestaurants = []; appStore.getRandomRestaurant">Reset suggestions</v-btn>
-        <div class="text-body-1 text-medium-emphasis">
-          Giving suggestions in a {{ appStore.radiusKm }} km radius <br>
-          {{ appStore.restaurants.length }} restaurants found
+        <div v-else-if="!appStore.availableRestaurants.length">
+          No more suggestions to give. Are you a really picky eater? 😳
+          <v-btn size="x-large" class="my-1"
+            @click="appStore.suggestedRestaurants = []; appStore.getRandomRestaurant">Reset suggestions</v-btn>
+        </div>
+        <div class="text-body-1 text-medium-emphasis py-1">
+          {{ appStore.restaurants.length }} restaurants found<br>
           {{ appStore.availableRestaurants.length }} suggestions left <v-btn icon="mdi-restore"
             @click="appStore.suggestedRestaurants = []; appStore.getRandomRestaurant"
             density="compact"
@@ -107,6 +99,62 @@
         </div>
       </div>
     </v-expand-transition>
+    <div class="text-body-1 text-medium-emphasis ">
+      Giving suggestions in a
+      <span class="text-high-emphasis font-weight-bold text-decoration-underline">
+        {{ appStore.radiusKm }} km<v-icon size="small">mdi-pencil</v-icon>
+        <v-dialog activator="parent"
+          v-model="kmDialog"
+          @keydown.esc="kmDialog = false"
+          persistent>
+          <v-card class="bg-surface pa-1"
+            title="Enter radius">
+            <v-form v-model="radiusValid">
+              <v-card-text>
+                <v-text-field variant="outlined"
+                  label="Radius in km"
+                  :rules="[v => !!v || v === '0' || 'Radius is required', v => v <= 100 || 'Radius must be less than 100 km']"
+                  v-model.number="radiusKm"
+                  type="number"
+                  @keydown.enter.prevent="submitRadius"
+                  eager></v-text-field>
+              </v-card-text>
+              <v-card-actions class="mt-n6">
+                <v-spacer></v-spacer>
+                <v-btn variant="flat"
+                  @click="kmDialog = false; appStore.radiusKm = radiusKm"
+                  :disabled="!radiusValid">Done</v-btn>
+              </v-card-actions>
+            </v-form>
+          </v-card>
+        </v-dialog>
+      </span> radius<br>
+
+    </div>
+    <v-expansion-panels :style="{ width: mobile ? '90%' : '600px' }"
+      key="filter"
+      class="mt-2">
+      <v-expansion-panel :title="'Picky eater? ' + (appStore.amenityFilter.length + appStore.cuisineFilter.length > 0 ? '(Selection made)' : '')">
+        <v-expansion-panel-text style="max-width: 100%">
+          <v-autocomplete label="Amenity type"
+            v-model="appStore.amenityFilter"
+            :items="amenityList"
+            multiple
+            chips
+            closable-chips
+            item-title="text"
+            item-value="value"></v-autocomplete>
+          <v-autocomplete label="Cuisine"
+            v-model="appStore.cuisineFilter"
+            :items="cuisineList"
+            multiple
+            chips
+            closable-chips
+            item-title="text"
+            item-value="value"></v-autocomplete>
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+    </v-expansion-panels>
   </div>
 </template>
 
@@ -119,6 +167,17 @@
   const { mobile } = useDisplay()
   const appStore = useAppStore()
   const { randomRestaurant: restaurant } = storeToRefs(appStore)
+  const kmDialog = ref(false)
+  const radiusKm = ref(appStore.radiusKm)
+  const radiusValid = ref(true)
+  const submitRadius = () => {
+    if (!radiusValid.value) return
+    appStore.radiusKm = radiusKm.value
+    kmDialog.value = false
+  }
+  watch(kmDialog, () => {
+    radiusKm.value = appStore.radiusKm
+  })
   const getCuisine = (cuisine: string) => {
     const list: CuisineType[] = cuisine.split(/[;,:\s]+/).filter(c => c) as CuisineType[]
     const cuisines = list
@@ -134,10 +193,7 @@
     return cuisines
   }
   const filterExpanded = ref(false)
-  const filterContainerClass = computed(() => {
-    if (!filterExpanded) return 'rounded-pill'
-    return
-  })
+
   const restaurantLocationUrl = computed(() => {
     if (restaurant.value) { return `https://nominatim.openstreetmap.org/reverse?format=json&lat=${restaurant.value?.latitude}&lon=${restaurant.value?.longitude}` }
     else return ''
@@ -157,6 +213,14 @@
     return Object.keys(cuisineMap).map((c) => {
       return {
         text: cuisineMap[c as CuisineType].name + ' ' + cuisineMap[c as CuisineType].emoji,
+        value: c
+      }
+    })
+  })
+  const amenityList = computed(() => {
+    return Object.keys(amenityMap).map((c) => {
+      return {
+        text: amenityMap[c as AmenityType],
         value: c
       }
     })
