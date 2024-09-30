@@ -8,7 +8,7 @@ export const useAppStore = defineStore('app', {
   state: () => {
     const { coords, error, isSupported, pause } = useGeolocation({})
     const locationToAdressUrl = computed(() => `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.value.latitude}&lon=${coords.value.longitude}`)
-    const { execute } = useFetch(locationToAdressUrl, {}, {
+    const { execute, data: coordinatesAdress } = useFetch(locationToAdressUrl, {}, {
       immediate: false, refetch: false, afterFetch: (ctx) => {
         console.log(ctx.data);
 
@@ -22,6 +22,12 @@ export const useAppStore = defineStore('app', {
         }
         if (ctx.data.address.house_number) {
           typedAdress.value += ` ${ctx.data.address.house_number}`
+        }       
+        if (ctx.data.address.city) {
+          typedAdress.value += ` ${ctx.data.address.city}`
+        }
+        else if( ctx.data.address.municipality) {
+          typedAdress.value += ` ${ctx.data.address.municipality}`
         }
         if (!ctx.data.address.road && ctx.data.value.address.house_number) {
           typedAdress.value = `${ctx.data.display_name}`
@@ -152,7 +158,8 @@ export const useAppStore = defineStore('app', {
       getRandomRestaurant,
       randomRestaurant,
       typedAdress,
-      radiusKm
+      radiusKm,
+      coordinatesAdress
     }
   },
 },
