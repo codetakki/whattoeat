@@ -36,15 +36,23 @@
         <div class="text-md-h3 text-h4 font-weight-bold">What do you think about:</div>
         <v-card v-if="restaurant"
           :width="mobile ? '90%' : 600"
-          min-height="140"
           :style="{ scale: mobile ? 1 : 1 }"
           class="text-left my-4 mx-2">
-          <v-card-title class="text-h5 text-md-h3 text-bold d-flex align-center">
-            <div class="flex-shrink-1 text-truncate">{{ restaurant.name }}</div>
-            <v-btn icon="mdi-open-in-new"
-              target="_blank"
-              :href="googleSearchQuary"
-              variant="flat"></v-btn>
+          <v-card-title>
+            <div class="text-h5 text-md-h3 text-bold d-flex align-center">
+
+              <div class="flex-shrink-1 text-truncate">{{ restaurant.name }}</div>
+              <v-spacer />
+              <v-btn v-if="restaurant.latitude"
+                target="_blank"
+                :href="`https://www.google.com/maps/search/?api=1&query=${restaurant.latitude},${restaurant.longitude}`"
+                icon="mdi-directions"></v-btn>
+              <v-btn icon="mdi-open-in-new"
+                target="_blank"
+                :href="googleSearchQuary"
+                variant="flat"></v-btn>
+            </div>
+            <div class="mt-n1 text-caption text-medium-emphasis">{{ restaurant.name }}</div>
           </v-card-title>
           <v-card-text class="text-h6 text-md-h5">
             <div v-if="restaurant.amenity_type">{{ amenityMap[restaurant.amenity_type] }}</div>
@@ -63,12 +71,17 @@
         <v-btn size="x-large"
           v-if="appStore.availableRestaurants.length !== 0"
           @click="appStore.getRandomRestaurant">I don't like it</v-btn>
-        <v-btn size="x-large" v-else
-          @click="appStore.suggestedRestaurants = []">Reset suggestions</v-btn>
+        <v-btn size="x-large"
+          v-else
+          @click="appStore.suggestedRestaurants = []; appStore.getRandomRestaurant">Reset suggestions</v-btn>
         <div class="text-body-1 text-medium-emphasis">
           Giving suggestions in a {{ appStore.radiusKm }} km radius <br>
           {{ appStore.restaurants.length }} restaurants found
-          {{ appStore.availableRestaurants.length }} suggestions left
+          {{ appStore.availableRestaurants.length }} suggestions left <v-btn icon="mdi-restore"
+            @click="appStore.suggestedRestaurants = []; appStore.getRandomRestaurant"
+            density="compact"
+            size="small"
+            variant="flat"></v-btn>
         </div>
       </div>
     </v-expand-transition>
@@ -76,11 +89,10 @@
 </template>
 
 <script lang="ts" setup>
-  import { useAppStore } from '@/stores/app'
+  import { useAppStore, useFetch } from '@/stores/app'
   import { storeToRefs } from 'pinia';
   import { cuisineMap, amenityMap } from '@/assets/cuisine-map';
   import { useDisplay } from 'vuetify';
-  import { useFetch } from '@vueuse/core';
 
   const { mobile } = useDisplay()
   const appStore = useAppStore()

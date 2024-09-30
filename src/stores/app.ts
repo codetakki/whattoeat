@@ -3,11 +3,22 @@ import { defineStore } from 'pinia'
 import { useGeolocation, createFetch } from '@vueuse/core'
 import { refDebounced } from '@vueuse/core'
 
-const useFetch = createFetch({
+export const useFetch = createFetch({
+  options: {
+    async beforeFetch({options}) {
+      if (!options.headers) options.headers = {}
+      options.headers = {
+        'Referer': 'https://wheretoeat.takki.org',
+      }
+      return {options}
+    },
+    
+  },
   fetchOptions: {
-    referrer: 'https://wheretoeat.takki.org',
-  }
+    mode: 'cors',
+  },
 })
+
 export const useAppStore = defineStore('app', {
   state: () => {
     const { coords, error, isSupported, pause } = useGeolocation({})
