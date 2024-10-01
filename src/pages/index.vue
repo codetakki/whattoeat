@@ -19,14 +19,6 @@
             label="Adress" />
         </div>
 
-        <!-- <div class="text-body-1 bg-surface border pa-2 px-4"
-          :class="filterContainerClass"
-          @click="filterExpanded = !filterExpanded"> Picky eater?
-          <div v-if="filterExpanded">
-            <v-autocomplete label="Cuisine"
-              :items="Object.keys(cuisineMap)"></v-autocomplete>
-          </div>
-        </div> -->
       </div>
       <div v-if="appStore.fetchingRestaurants || appStore.fetchingAdressCoordinates"
         key="progress">
@@ -160,7 +152,7 @@
       </v-expansion-panel>
     </v-expansion-panels>
     <div class="text-caption text-medium-emphasis mt-4">
-      Data provided by <a href="https://nominatim.openstreetmap.org/" target="_blank">OpenStreetMap</a><br>
+      Data provided by <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a><br>
       Created by <span class="text-decoration-underline text-blue-darken-1 cursor-pointer">Tarek Auf der Strasse
         <v-dialog activator="parent">
           <v-card title="Contact info">
