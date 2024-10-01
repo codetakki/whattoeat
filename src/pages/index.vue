@@ -14,6 +14,7 @@
             width="300"
             variant="outlined"
             class="text-h3"
+            clearable
             :style="{ scale: mobile ? 1 : 1.4 }"
             label="Adress" />
         </div>
@@ -28,12 +29,11 @@
         </div> -->
       </div>
       <div v-if="appStore.fetchingRestaurants || appStore.fetchingAdressCoordinates"
-        width="300"
         key="progress">
         <v-progress-circular indeterminate
           :size="128"
           :width="15"
-          class="text-h2 my-2"
+          class="text-h2 mb-5 mt-2"
           speed="0.9">
           🍽️
         </v-progress-circular>
@@ -54,30 +54,31 @@
           <v-card-title>
             <div class="text-h5 text-md-h3 text-bold d-flex align-center">
 
-              <div class="flex-shrink-1 text-truncate">{{ restaurant.name }}</div>
+              <div class="flex-shrink-1 text-truncate">{{ restaurant?.name }}</div>
               <v-spacer />
-              <v-btn v-if="restaurant.latitude"
+              <v-btn v-if="restaurant?.latitude"
                 target="_blank"
-                :href="`https://www.google.com/maps/search/?api=1&query=${restaurant.latitude},${restaurant.longitude}`"
-                icon="mdi-directions"></v-btn>
+                :href="`https://www.google.com/maps/search/?api=1&query=${restaurant?.latitude},${restaurant?.longitude}`"
+                icon="mdi-directions"
+                variant="flat"
+                ></v-btn>
               <v-btn icon="mdi-open-in-new"
                 target="_blank"
                 :href="googleSearchQuary"
                 variant="flat"></v-btn>
             </div>
-            <div class="mt-n1 text-caption text-medium-emphasis">{{ restaurant.name }}</div>
+            <div class="mt-n1 text-caption text-medium-emphasis">{{ restaurant?.name }}</div>
           </v-card-title>
           <v-card-text class="text-h6 text-md-h5">
-            <div v-if="restaurant.amenity_type">{{ amenityMap[restaurant.amenity_type] }}</div>
-            <div v-if="restaurant.cuisine">{{ getCuisine(restaurant.cuisine || '') }}</div>
+            <div v-if="restaurant?.amenity_type">{{ amenityMap[restaurant?.amenity_type || 'bar'] }}</div>
+            <div v-if="restaurant?.cuisine">{{ getCuisine(restaurant?.cuisine || '') }}</div>
             <div>
-              <a v-if="restaurant.phone"
-                :href="`tel:${restaurant.phone.replace(/[^\d]/g, '')}`"
+              <a v-if="restaurant?.phone"
+                :href="`tel:${restaurant?.phone.replace(/[^\d]/g, '')}`"
                 class="text-decoration-none">
-                ☎️ {{ restaurant.phone }}
+                ☎️ {{ restaurant?.phone }}
               </a>
             </div>
-
             <!-- <pre>{{ restaurant }}</pre> -->
           </v-card-text>
         </v-card>
@@ -85,7 +86,7 @@
           v-if="appStore.availableRestaurants.length !== 0"
           @click="appStore.getRandomRestaurant">I don't like it</v-btn>
         <div v-else-if="!appStore.availableRestaurants.length">
-          No more suggestions to give. Are you a really picky eater? 😳
+          <div>No more suggestions to give. Are you a really picky eater? 😳</div>
           <v-btn size="x-large" class="my-1"
             @click="appStore.suggestedRestaurants = []; appStore.getRandomRestaurant">Reset suggestions</v-btn>
         </div>
@@ -158,7 +159,23 @@
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
+    <div class="text-caption text-medium-emphasis mt-4">
+      Data provided by <a href="https://nominatim.openstreetmap.org/" target="_blank">OpenStreetMap</a><br>
+      Created by <span class="text-decoration-underline text-blue-darken-1 cursor-pointer">Tarek Auf der Strasse
+        <v-dialog activator="parent">
+          <v-card title="Contact info">
+            <v-card-text>
+              <v-icon>mdi-linkedin</v-icon> <a href="https://www.linkedin.com/in/tarek-auf-der-strasse-4854331b1/" target="_blank">LinkedIn</a>
+              <br>
+              <v-icon>mdi-github</v-icon> <a href="https://github.com/codetakki" target="_blank">Github</a>
+
+            </v-card-text>
+          </v-card>
+        </v-dialog>
+      </span>
+    </div>
   </div>
+
 </template>
 
 <script lang="ts" setup>
