@@ -19,7 +19,6 @@ export const useFetch = createFetch({
 
 export const useAppStore = defineStore('app', {
   state: () => {
-
     const { coords, error, isSupported, pause } = useGeolocation({})
     const locationToAdressUrl = computed(() => `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.value.latitude}&lon=${coords.value.longitude}`)
     const { execute, data: coordinatesAdress, isFetching: fetchingCoordinatesAdress } = useFetch(locationToAdressUrl, {}, {

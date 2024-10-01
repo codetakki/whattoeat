@@ -33,7 +33,7 @@
         <v-progress-circular indeterminate
           :size="128"
           :width="15"
-          class="text-h2"
+          class="text-h2 my-2"
           speed="0.9">
           🍽️
         </v-progress-circular>
@@ -101,10 +101,12 @@
     </v-expand-transition>
     <div class="text-body-1 text-medium-emphasis ">
       Giving suggestions in a
+      <!-- KM radius dialog -->
       <span class="text-high-emphasis font-weight-bold text-decoration-underline">
         {{ appStore.radiusKm }} km<v-icon size="small">mdi-pencil</v-icon>
         <v-dialog activator="parent"
           v-model="kmDialog"
+          max-width="400"
           @keydown.esc="kmDialog = false"
           persistent>
           <v-card class="bg-surface pa-1"
@@ -116,6 +118,7 @@
                   :rules="[v => !!v || v === '0' || 'Radius is required', v => v <= 100 || 'Radius must be less than 100 km']"
                   v-model.number="radiusKm"
                   type="number"
+                  autofocus
                   @keydown.enter.prevent="submitRadius"
                   eager></v-text-field>
               </v-card-text>
