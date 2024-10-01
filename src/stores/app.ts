@@ -68,7 +68,7 @@ export const useAppStore = defineStore('app', {
     const { data: adressCoordinatesData, isFetching: fetchingAdressCoordinates, execute: executeAdressToCoords } = useFetch(addressRequestUrl, {
       immediate: false, refetch: true,
       beforeFetch({ cancel }) {
-        if (!typedAdress.value || typedAdress.value.length < 1) cancel()
+        if (!adressDebounced.value || adressDebounced.value.length < 1) cancel()
       }
     }).json<any[]>()
     const adressCoordinates = computed(() => {
@@ -82,20 +82,30 @@ export const useAppStore = defineStore('app', {
     // const data = getFoodAmenitiesNearCoordinate(coords.value.latitude, coords.value.longitude)
     const radiusKm = ref(5)
     const radius = computed(() => radiusKm.value * 1000)
+
+    const amenityFilter = ref<string[]>(['food_court', 'fast_food', 'restaurant'])
+
     const overpassQuery = computed(() => {
       if (!adressCoordinates.value) return null
+
+      if (!adressCoordinates.value) return null
+      const filter = amenityFilter.value.length > 0 ? amenityFilter.value : ['food_court',
+        'cafe',
+        'fast_food',
+        'ice_cream',
+        'bar',
+        'pub',
+        'restaurant']
+      const amenity_types_string = filter.map(t => `
+            node["amenity"="${t}"](around:${radius.value},${adressCoordinates.value?.latitude},${adressCoordinates.value?.longitude});
+            way["amenity"="${t}"](around:${radius.value},${adressCoordinates.value?.latitude},${adressCoordinates.value?.longitude});
+            relation["amenity"="${t}"](around:${radius.value},${adressCoordinates.value?.latitude},${adressCoordinates.value?.longitude});
+            `).join('')
+
       return `
           [out:json];
           (
-            node["amenity"="restaurant"](around:${radius.value},${adressCoordinates.value.latitude},${adressCoordinates.value.longitude});
-            way["amenity"="restaurant"](around:${radius.value},${adressCoordinates.value.latitude},${adressCoordinates.value.longitude});
-            relation["amenity"="restaurant"](around:${radius.value},${adressCoordinates.value.latitude},${adressCoordinates.value.longitude});
-            node["amenity"="fast_food"](around:${radius.value},${adressCoordinates.value.latitude},${adressCoordinates.value.longitude});
-            way["amenity"="fast_food"](around:${radius.value},${adressCoordinates.value.latitude},${adressCoordinates.value.longitude});
-            relation["amenity"="fast_food"](around:${radius.value},${adressCoordinates.value.latitude},${adressCoordinates.value.longitude});
-            node["amenity"="food_court"](around:${radius.value},${adressCoordinates.value.latitude},${adressCoordinates.value.longitude});
-            way["amenity"="food_court"](around:${radius.value},${adressCoordinates.value.latitude},${adressCoordinates.value.longitude});
-            relation["amenity"="food_court"](around:${radius.value},${adressCoordinates.value.latitude},${adressCoordinates.value.longitude});
+            ${amenity_types_string}
           );
           out body;
           >;
@@ -128,9 +138,8 @@ export const useAppStore = defineStore('app', {
 
 
     const cuisineFilter = ref<string[]>([])
-    const amenityFilter = ref<string[]>([])
     watch(() => {
-        return { 'a': cuisineFilter.value, b: amenityFilter.value }
+      return { 'a': cuisineFilter.value, b: amenityFilter.value }
     }, () => {
       suggestedRestaurants.value = []
     })
@@ -143,12 +152,6 @@ export const useAppStore = defineStore('app', {
       // Extract relevant information about each amenity
       restaurantData.value.elements.forEach((element: any) => {
         if (element.tags && element.tags.name) {
-          if (amenityFilter.value.length > 0) {
-            if (!element.tags.amenity) return
-            const amenityTags = element.tags.amenity.split(';').map((tag: string) => tag.trim())
-            const hasAnyAmenity = amenityTags.some((tag: string) => amenityFilter.value.includes(tag))
-            if (!hasAnyAmenity) return
-          }
           if (cuisineFilter.value.length > 0) {
             if (!element.tags.cuisine) return
             const hasAnyCuisine = cuisineFilter.value.some((tag: string) => element.tags.cuisine.includes(tag))
