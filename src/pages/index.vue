@@ -152,7 +152,6 @@
       </v-expansion-panel>
     </v-expansion-panels>
     <div class="text-caption text-medium-emphasis mt-4">
-      Data provided by <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a><br>
       Created by <span class="text-decoration-underline text-blue-darken-1 cursor-pointer">Tarek Auf der Strasse
         <v-dialog activator="parent">
           <v-card title="Contact info">
@@ -160,11 +159,14 @@
               <v-icon>mdi-linkedin</v-icon> <a href="https://www.linkedin.com/in/tarek-auf-der-strasse-4854331b1/" target="_blank">LinkedIn</a>
               <br>
               <v-icon>mdi-github</v-icon> <a href="https://github.com/codetakki" target="_blank">Github</a>
-
+              
             </v-card-text>
           </v-card>
         </v-dialog>
-      </span>
+      </span><br>
+      Data provided by <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy;OpenStreetMap</a><br>     
+      Built with <a href="https://v3.vuejs.org/" target="_blank">Vue 3</a>, <a href="https://vuetifyjs.com/en/" target="_blank">Vuetify</a>, <a href="https://pinia.vuejs.org/" target="_blank">Pinia</a> and <a href="https://vitejs.dev/" target="_blank">Vite</a>
+      <br>
     </div>
   </div>
 
@@ -214,9 +216,9 @@
     console.log(appStore.coordinatesAdress?.address);
     console.log(restaurantLocation.value);
 
-    var string = `${restaurant.value?.name} restaurant`
-    if (!restaurantLocation.value || !restaurant.value?.longitude) return ''
-    else { string += ` in ${restaurantLocation.value.address.road || restaurantLocation.value.address.house_number} ${restaurantLocation.value.address.city || restaurantLocation.value.address.municipality}` }
+    var string = `${restaurant.value?.name} `
+    if (!restaurantLocation.value || !restaurant.value?.longitude) ''
+    else if (restaurantLocation.value){ string += ` ${ restaurantLocation.value.address.city || restaurantLocation.value.address.municipality || restaurantLocation.value.address.road }` }
     return `https://www.google.com/search?q=${string.replace(' ', '+')}`
   })
 

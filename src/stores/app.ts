@@ -70,7 +70,7 @@ export const useAppStore = defineStore('app', {
       beforeFetch({ cancel }) {
         if (!adressDebounced.value || adressDebounced.value.length < 1) cancel()
       }
-    }).json<any[]>()
+    }).json<{lat: number, lon: number}[]>()
     const adressCoordinates = computed(() => {
       if (adressCoordinatesData && adressCoordinatesData.value && adressCoordinatesData.value[0]) {
         return { latitude: adressCoordinatesData.value[0].lat, longitude: adressCoordinatesData.value[0].lon }
@@ -214,7 +214,8 @@ export const useAppStore = defineStore('app', {
       availableRestaurants,
       suggestedRestaurants,
       cuisineFilter,
-      amenityFilter
+      amenityFilter,
+      adressCoordinatesData
     }
   },
 },
