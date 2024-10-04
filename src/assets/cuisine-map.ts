@@ -1,11 +1,12 @@
 export const amenityMap = {
+  'restaurant': 'Restaurant 🍴',
+  'fast_food': 'Fast Food 🍔',
   'food_court': 'Food Court 🍴',
   'cafe': 'Café ☕️',
-  'fast_food': 'Fast Food 🍔',
   'ice_cream': 'Ice Cream 🍦',
   'bar': 'Bar 🍺',
   'pub': 'Pub 🍺',
-  'restaurant': 'Restaurant 🍴',
+  'biergarten': 'Biergarten 🍺',
 }
 
 export const cuisineMap = {

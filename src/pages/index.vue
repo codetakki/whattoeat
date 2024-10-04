@@ -9,14 +9,15 @@
               size="20"
               class="ml-n1 mr-1"></v-progress-circular></template>
         </v-chip>
-        <div class="mt-4 mt-md-8 text-center">
+        <div class="mt-4 mt-md-8 text-left mb-0 mb-md-5">
           <v-text-field v-model="appStore.typedAdress"
             width="300"
             variant="outlined"
             class="text-h3"
             clearable
-            :style="{ scale: mobile ? 1 : 1.4 }"
-            label="Adress" />
+            :hint="textFieldHint"
+            persistent-hint
+            :style="{ scale: mobile ? 1 : 1.4 }" />
         </div>
 
       </div>
@@ -52,8 +53,7 @@
                 target="_blank"
                 :href="`https://www.google.com/maps/search/?api=1&query=${restaurant?.latitude},${restaurant?.longitude}`"
                 icon="mdi-directions"
-                variant="flat"
-                ></v-btn>
+                variant="flat"></v-btn>
               <v-btn icon="mdi-open-in-new"
                 target="_blank"
                 :href="googleSearchQuary"
@@ -74,12 +74,14 @@
             <!-- <pre>{{ restaurant }}</pre> -->
           </v-card-text>
         </v-card>
-        <v-btn size="x-large" class="mb-4"
+        <v-btn size="x-large"
+          class="mb-4"
           v-if="appStore.availableRestaurants.length !== 0"
           @click="appStore.getRandomRestaurant">I don't like it</v-btn>
         <div v-else-if="!appStore.availableRestaurants.length">
           <div>No more suggestions to give. Are you a really picky eater? 😳</div>
-          <v-btn size="x-large" class="my-1"
+          <v-btn size="x-large"
+            class="my-1"
             @click="appStore.suggestedRestaurants = []; appStore.getRandomRestaurant">Reset suggestions</v-btn>
         </div>
         <div class="text-body-1 text-medium-emphasis py-1">
@@ -156,16 +158,23 @@
         <v-dialog activator="parent">
           <v-card title="Contact info">
             <v-card-text>
-              <v-icon>mdi-linkedin</v-icon> <a href="https://www.linkedin.com/in/tarek-auf-der-strasse-4854331b1/" target="_blank">LinkedIn</a>
+              <v-icon>mdi-linkedin</v-icon> <a href="https://www.linkedin.com/in/tarek-auf-der-strasse-4854331b1/"
+                target="_blank">LinkedIn</a>
               <br>
-              <v-icon>mdi-github</v-icon> <a href="https://github.com/codetakki" target="_blank">Github</a>
-              
+              <v-icon>mdi-github</v-icon> <a href="https://github.com/codetakki"
+                target="_blank">Github</a>
+
             </v-card-text>
           </v-card>
         </v-dialog>
       </span><br>
-      Data provided by <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy;OpenStreetMap</a><br>     
-      Built with <a href="https://v3.vuejs.org/" target="_blank">Vue 3</a>, <a href="https://vuetifyjs.com/en/" target="_blank">Vuetify</a>, <a href="https://pinia.vuejs.org/" target="_blank">Pinia</a> and <a href="https://vitejs.dev/" target="_blank">Vite</a>
+      Data provided by <a href="https://www.openstreetmap.org/copyright"
+        target="_blank">&copy;OpenStreetMap</a><br>
+      Built with <a href="https://v3.vuejs.org/"
+        target="_blank">Vue 3</a>, <a href="https://vuetifyjs.com/en/"
+        target="_blank">Vuetify</a>, <a href="https://pinia.vuejs.org/"
+        target="_blank">Pinia</a> and <a href="https://vitejs.dev/"
+        target="_blank">Vite</a>
       <br>
     </div>
   </div>
@@ -218,7 +227,7 @@
 
     var string = `${restaurant.value?.name} `
     if (!restaurantLocation.value || !restaurant.value?.longitude) ''
-    else if (restaurantLocation.value){ string += ` ${ restaurantLocation.value.address.city || restaurantLocation.value.address.municipality || restaurantLocation.value.address.road }` }
+    else if (restaurantLocation.value) { string += ` ${restaurantLocation.value.address.city || restaurantLocation.value.address.municipality || restaurantLocation.value.address.road}` }
     return `https://www.google.com/search?q=${string.replace(' ', '+')}`
   })
 
@@ -237,5 +246,14 @@
         value: c
       }
     })
+  })
+
+  const textFieldHint = computed(() => {
+    if (!appStore.adressCoordinatesData || !appStore.adressCoordinatesData[0]) return ''
+    const object = appStore.adressCoordinatesData[0]
+
+    const split = object.display_name.split(',')
+    const slice = Math.min(split.length, 4)
+    return split.slice(0, slice).join(', ')
   })
 </script>
